@@ -4,14 +4,5 @@ A new Flutter project.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-<img src="https://github.com/pridhorajiyagithub/Animal_biography_App/blob/master/images/Screenrecorder-2022-11-09-10-10-25-511.mp4" style=" height:650px; " data-target="animated-image.originalImage">
+![Screenshot_2022-11-07-09-43-44-851_com example animal_biography](https://user-images.githubusercontent.com/111557931/200786818-34ce95b3-8249-4f6c-978a-dc21746ad466.jpg)
+![Screenshot_2022-11-06-23-53-39-926_com example animal_biography](https://user-images.githubusercontent.com/111557931/200786963-05278e7b-1261-4b61-828b-6f144eecb864.jpg)
