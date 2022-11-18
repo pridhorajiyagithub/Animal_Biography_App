@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:animal_biography/heplers/database%20helper.dart';
 import 'package:animal_biography/heplers/images_api_helper.dart';
 import 'package:animal_biography/model/animal_model_class_page.dart';
@@ -17,6 +19,15 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   int index = 0;
+  Random random = Random();
+
+  @override
+  void initState() {
+    super.initState();
+    Future<List<DBData>> details = DBHelper.dbHelper
+        .fetchAllRecord(tableName: "Splash", data: Global.detailsOfData);
+  }
+
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
@@ -43,7 +54,7 @@ class _SplashScreenState extends State<SplashScreen> {
         index: index,
         children: [
           //-----------------------1 sp
-          Stack(
+          /* Stack(
             children: [
               FutureBuilder(
                 future: ImageApi.imageApi.getImage(search: "wild animal"),
@@ -56,6 +67,87 @@ class _SplashScreenState extends State<SplashScreen> {
                       color: const Color(0xffC19E82),
                       colorBlendMode: BlendMode.modulate,
                       fit: BoxFit.cover,
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text("${snapshot.error}"),
+                    );
+                  } else {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.brown,
+                      ),
+                    );
+                  }
+                },
+              ),
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    App_Bar(),
+                    const Spacer(),
+                    Text(
+                      "Ready to\nWatch ?",
+                      style: titleStyle,
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    Text(
+                      "Aplanet is a global leader in real life entertainment, serving a passionate audience that inspires, informs and entertains.",
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.white.withOpacity(0.6),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    Text(
+                      "Start Enjoying",
+                      style: textStyle,
+                    ),
+                    const SizedBox(height: 15),
+                  ],
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      index = 1;
+                    });
+                  },
+                  child: NextPageIconButton(),
+                ),
+              )
+            ],
+          ),*/
+
+          Stack(
+            children: [
+              FutureBuilder(
+                future: DBHelper.dbHelper.fetchAllRecord(
+                    tableName: "ManEater", data: Global.detailsOfData),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    List<DBData>? res = snapshot.data;
+                    int? randomIndex = random.nextInt(res!.length);
+                    DBData randomImage = res[randomIndex];
+
+                    return Container(
+                      width: width,
+                      height: height,
+                      decoration: BoxDecoration(
+                          color: const Color(0xffC19E82),
+                          image: DecorationImage(
+                              fit: BoxFit.cover,
+                              opacity: 0.4,
+                              image: MemoryImage(
+                                randomImage.image,
+                              ))),
                     );
                   } else if (snapshot.hasError) {
                     return Center(
@@ -142,15 +234,15 @@ class _SplashScreenState extends State<SplashScreen> {
                                       margin: EdgeInsets.all(10),
                                       height: 120,
                                       decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(7),
-                                          image: DecorationImage(
-                                              image: MemoryImage(res[i].image),
-                                              fit: BoxFit.cover,
-                                              colorFilter:
-                                                  const ColorFilter.mode(
-                                                      Color(0xffC19E82),
-                                                      BlendMode.modulate))),
+                                        borderRadius: BorderRadius.circular(7),
+                                        image: DecorationImage(
+                                          image: MemoryImage(res[i].image),
+                                          fit: BoxFit.cover,
+                                          colorFilter: const ColorFilter.mode(
+                                              Color(0xffC19E82),
+                                              BlendMode.modulate),
+                                        ),
+                                      ),
                                       child: Row(
                                         children: [
                                           const SizedBox(width: 15),
