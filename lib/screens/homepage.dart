@@ -1,10 +1,14 @@
-import 'dart:io';
+import 'dart:typed_data';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:animal_biography/heplers/database%20helper.dart';
+import 'package:animal_biography/heplers/images_api_helper.dart';
+import 'package:animal_biography/model/animal_model_class_page.dart';
+import 'package:animal_biography/widgets/appbar.dart';
+import 'package:animal_biography/widgets/customContainer.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import '../global.dart';
-import '../hepler class/author_helper.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -14,366 +18,231 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final ImagePicker _picker = ImagePicker();
-  final GlobalKey<FormState> insertFormKey = GlobalKey<FormState>();
-  final GlobalKey<FormState> updateFormKey = GlobalKey<FormState>();
-  TextEditingController titleController = TextEditingController();
-  TextEditingController detailsController = TextEditingController();
+  Color backGroundColor = const Color(0xffC19E82);
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text("Author Registration App"),
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: CloudFirestoreHelper.cloudFirestoreHelper.selectRecord(),
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text("ERROR : ${snapshot.error}"),
-            );
-          } else if (snapshot.hasData) {
-            QuerySnapshot? data = snapshot.data;
-            List<QueryDocumentSnapshot> documents = data!.docs;
-            return ListView.builder(
-              shrinkWrap: true,
-              itemCount: documents.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
-                  child: Card(
-                    elevation: 3,
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(7),
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
+    return SafeArea(
+        child: Scaffold(
+      body: Stack(
+        children: [
+          Container(
+            color: backGroundColor,
+            height: height * 0.35,
+            child: Stack(
+              children: [
+                FutureBuilder(
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      Uint8List? image = snapshot.data;
+                      return Image.memory(
+                        height: height * 0.35,
+                        width: double.infinity,
+                        image!,
+                        fit: BoxFit.cover,
+                        color: backGroundColor.withOpacity(0.8),
+                        colorBlendMode: BlendMode.modulate,
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text("${snapshot.error}"));
+                    } else {
+                      return Center(
+                        child: const CircularProgressIndicator(
+                          color: Colors.brown,
+                        ),
+                      );
+                    }
+                  },
+                  future: ImageApi.imageApi.getImage(search: 'Wild Animal'),
+                ),
+                Container(
+                  height: height * 0.38,
+                  padding: const EdgeInsets.all(15),
+                  child: Column(
+                    children: [
+                      App_Bar(),
+                      const Spacer(),
+                      Text(
+                        "Welcome to\nNew Aplanet",
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 43,
+                          color: Colors.white.withOpacity(0.86),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: Colors.blueGrey.withOpacity(0.5),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Container(
-                                  height: 60,
-                                  width: 60,
-                                  alignment: Alignment.center,
-                                  color: Colors.blueGrey.withOpacity(0.7),
-                                  child: Text(
-                                    "${index + 1}",
-                                    style: const TextStyle(
-                                        fontSize: 25,
-                                        fontWeight: FontWeight.w600),
-                                  ),
+                      const Spacer(),
+                      SizedBox(height: height * 0.015),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              // alignment: Alignment.bottomCenter,
+              height: height * 0.65,
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: backGroundColor,
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(30),
+                  topLeft: Radius.circular(30),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Spacer(),
+                  FutureBuilder(
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        List<DBAnimal> data = snapshot.data!;
+                        return SizedBox(
+                          height: height * 0.38,
+                          child: ListView.builder(
+                            itemBuilder: (context, i) {
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 10,
+                                  bottom: 10,
+                                  right: 15,
                                 ),
-                                const SizedBox(
-                                  width: 20,
-                                ),
-                                Text(
-                                  "${documents[index]['title']}",
-                                  style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                                const Spacer(),
-                                IconButton(
-                                  onPressed: () async {
-                                    /*await CloudFirestoreHelper.cloudFirestoreHelper
-                                      .updateRecord(id: "${documents[index]}");*/
-                                    validateAndEditData(
-                                        id: documents[index].id);
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.of(context).pushNamed(
+                                        '/details_page',
+                                        arguments: data[i]);
                                   },
-                                  icon: const Icon(
-                                    Icons.edit,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () async {
-                                    await CloudFirestoreHelper
-                                        .cloudFirestoreHelper
-                                        .deleteRecord(id: documents[index].id);
-                                  },
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                          Container(
-                            height: 100,
-                            width: 370,
-                            color: Colors.blueGrey.withOpacity(0.1555),
-                            alignment: Alignment.center,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const SizedBox(
-                                  width: 70,
-                                ),
-                                const Expanded(
-                                  child: Text(
-                                    "Book Name : ",
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w500),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Text("${documents[index]['details']}",
-                                      style: const TextStyle(fontSize: 20),
-                                      textAlign: TextAlign.left),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            height: 300,
-                            width: 370,
-                            child: (Global.image != null)
-                                ? Image.file(
-                                    documents[index]['image']!,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: const [
-                                      Icon(
-                                        Icons.add,
-                                        size: 30,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        height: height * 0.26,
+                                        width: width * 0.5,
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(7),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black
+                                                    .withOpacity(0.2),
+                                                blurRadius: 3,
+                                              )
+                                            ],
+                                            image: DecorationImage(
+                                                fit: BoxFit.cover,
+                                                image: MemoryImage(
+                                                    data[i].image))),
                                       ),
-                                      SizedBox(
-                                        height: 10,
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        data[i].name,
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.white,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                       Text(
-                                        "Add your Logo",
+                                        data[i].description,
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.white.withOpacity(0.8),
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
                                     ],
                                   ),
-                          )
-                        ],
+                                ),
+                              );
+                            },
+                            scrollDirection: Axis.horizontal,
+                            itemCount: data.length,
+                          ),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text("${snapshot.error}"));
+                      } else {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.brown,
+                          ),
+                        );
+                      }
+                    },
+                    future: DBHelper.dbHelper.fetchAllAnimalData(
+                        tableName: "animalsData", data: Global.animalData),
+                  ),
+                  const Spacer(),
+                  Text(
+                    "Quick Categories",
+                    style: GoogleFonts.poppins(
+                      fontSize: 23,
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Global.category = "Snake";
+                          setState(() {});
+                        },
+                        child: customContainer(
+                            width: width,
+                            height: height,
+                            name: "Snake",
+                            image: "snake"),
                       ),
-                    ),
+                      GestureDetector(
+                        onTap: () {
+                          Global.category = "Dog";
+                          setState(() {});
+                        },
+                        child: customContainer(
+                            width: width,
+                            height: height,
+                            name: "Dog",
+                            image: "dog"),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Global.category = "Elephant";
+                          setState(() {});
+                        },
+                        child: customContainer(
+                            width: width,
+                            height: height,
+                            name: "Elephant",
+                            image: "elephant"),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Global.category = "Lion";
+                          setState(() {});
+                        },
+                        child: customContainer(
+                            width: width,
+                            height: height,
+                            name: "Lion",
+                            image: "lion"),
+                      ),
+                    ],
                   ),
-                );
-              },
-            );
-          }
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
-        onPressed: () async {
-          setState(
-            () async {
-              await validateAndInsertData();
-            },
-          );
-        },
-      ),
-    );
-  }
-
-  validateAndInsertData() async {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Insert Details"),
-        actions: [
-          ElevatedButton(
-              onPressed: () async {
-                if (insertFormKey.currentState!.validate()) {
-                  insertFormKey.currentState!.save();
-                  Map<String, dynamic> data = {
-                    'title': Global.title,
-                    'details': Global.name,
-                    'image': Global.image,
-                  };
-                  CloudFirestoreHelper.cloudFirestoreHelper
-                      .insertRecord(data: data);
-                  titleController.clear();
-                  detailsController.clear();
-                  setState(() {
-                    Global.title = "";
-                    Global.name = "";
-                  });
-                  Navigator.of(context).pop();
-                }
-              },
-              child: const Text("Add")),
-          OutlinedButton(
-              onPressed: () async {
-                titleController.clear();
-                detailsController.clear();
-                setState(() {
-                  Global.title = "";
-                  Global.name = "";
-                });
-                Navigator.of(context).pop();
-              },
-              child: const Text("Remove")),
-        ],
-        content: Form(
-          key: insertFormKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              GestureDetector(
-                onTap: () async {
-                  XFile? pickedFile =
-                      await _picker.pickImage(source: ImageSource.gallery);
-                  setState(() {
-                    Global.image = File(pickedFile!.path);
-                  });
-                },
-                child: Container(
-                  height: 50,
-                  width: 250,
-                  padding: EdgeInsets.only(left: 8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(3),
-                    border: Border.all(
-                      color: Colors.black45.withOpacity(0.4),
-                    ),
-                  ),
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "+ Add Image of Book",
-                    style: TextStyle(
-                        fontSize: 16, color: Colors.black.withOpacity(0.60)),
-                  ),
-                ),
+                ],
               ),
-              const SizedBox(height: 8),
-              TextFormField(
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: "Title",
-                    hintText: "Enter title here..."),
-                controller: titleController,
-                validator: (val) => (val!.isEmpty) ? "Enter name first" : null,
-                onSaved: (val) {
-                  Global.title = val;
-                },
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-              TextFormField(
-                maxLines: 3,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: "Name",
-                    hintText: "Enter name here..."),
-                controller: detailsController,
-                validator: (val) => (val!.isEmpty) ? "Enter name first" : null,
-                onSaved: (val) {
-                  Global.name = val;
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  validateAndEditData({required String id}) async {
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Update details"),
-        content: Form(
-          key: updateFormKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                validator: (val) {
-                  (val!.isEmpty) ? "Enter title First..." : null;
-                  return null;
-                },
-                onSaved: (val) {
-                  Global.title = val;
-                },
-                controller: titleController,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: "Enter title Here....",
-                    labelText: "Title"),
-              ),
-              const SizedBox(height: 10),
-              TextFormField(
-                validator: (val) {
-                  (val!.isEmpty) ? "Enter Details First..." : null;
-                  return null;
-                },
-                onSaved: (val) {
-                  Global.name = val;
-                },
-                maxLines: 3,
-                controller: detailsController,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: "Enter details Here....",
-                    labelText: "name"),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          ElevatedButton(
-            child: const Text("Update"),
-            onPressed: () {
-              if (updateFormKey.currentState!.validate()) {
-                updateFormKey.currentState!.save();
-
-                Map<String, dynamic> data = {
-                  'title': Global.title,
-                  'details': Global.name,
-                  'image': Global.image,
-                };
-                CloudFirestoreHelper.cloudFirestoreHelper
-                    .updateRecord(id: id, updateData: data);
-              }
-              titleController.clear();
-              detailsController.clear();
-
-              Global.title = "";
-              Global.name = "";
-              Navigator.of(context).pop();
-            },
-          ),
-          OutlinedButton(
-            child: const Text("Cancel"),
-            onPressed: () {
-              titleController.clear();
-              detailsController.clear();
-
-              Global.title = "";
-              Global.name = "";
-              Navigator.of(context).pop();
-            },
+            ),
           ),
         ],
       ),
-    );
+    ));
   }
-
-//  Future uploadImage(File Global.image) {}
 }
